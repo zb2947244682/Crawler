@@ -1,0 +1,23 @@
+{
+  "name": "crawler-api",
+  "version": "1.0.0",
+  "description": "基于Playwright的爬虫API工具",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "playwright": "^1.48.0",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0",
+    "uuid": "^10.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "keywords": ["crawler", "api", "playwright", "scraping"],
+  "author": "",
+  "license": "MIT"
+}
