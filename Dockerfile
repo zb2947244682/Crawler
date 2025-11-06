@@ -1,40 +1,29 @@
-# 基于Node.js 20 Alpine的Docker镜像
-FROM node:20-alpine
+﻿FROM mcr.microsoft.com/playwright:v1.48.0-noble
 
-# 设置工作目录
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 WORKDIR /app
 
-# 安装Playwright系统依赖
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    xvfb \
-    && rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
 
-# 设置Playwright环境变量
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
-# 复制package.json并安装依赖
-COPY package*.json ./
-RUN npm install --production
+RUN playwright install chromium
 
-# 创建非root用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# 复制应用代码
 COPY . .
 
-# 切换到非root用户
-USER nextjs
+RUN mkdir -p screenshots && \
+    chown -R pwuser:pwuser /app
 
-# 暴露端口
-EXPOSE 3000
+USER pwuser
 
-# 启动应用
-CMD ["npm", "start"]
+EXPOSE 8000
+
+CMD ["python3", "app.py"]

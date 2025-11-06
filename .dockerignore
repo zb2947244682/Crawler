@@ -1,9 +1,42 @@
-node_modules
-npm-debug.log
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+ENV
+env.bak
+venv.bak
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
 .git
 .gitignore
-README.md
-.env
-.nyc_output
-coverage
-.cache
+
+# Documentation
+*.md
+!README.md
+
+# Logs
+*.log
+
+# Screenshots (will be mounted as volume)
+screenshots
+
+# Node modules (if any)
+node_modules
+
+# Temporary files
+*.tmp
+*.temp
