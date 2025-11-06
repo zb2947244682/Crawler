@@ -18,6 +18,10 @@ RUN apk add --no-cache \
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
+# 设置Chrome在Docker中运行的环境变量
+ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV CHROME_PATH=/usr/bin/chromium-browser
+
 # 复制package.json并安装依赖
 COPY package*.json ./
 RUN npm install --production

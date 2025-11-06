@@ -56,12 +56,28 @@ export async function getBrowser(options = {}) {
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
       '--disable-gpu',
-      '--no-zygote',
-      '--single-process',
-      '--disable-extensions',
+      '--disable-software-rasterizer',
       '--disable-background-timer-throttling',
       '--disable-renderer-backgrounding',
-      '--disable-features=ImproveInformer,TranslateUI,BlinkGenPropertyTrees',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-accessibility',
+      '--disable-extensions',
+      '--disable-plugins',
+      '--disable-default-apps',
+      '--disable-sync',
+      '--disable-translate',
+      '--hide-scrollbars',
+      '--metrics-recording-only',
+      '--mute-audio',
+      '--no-first-run',
+      '--safebrowsing-disable-auto-update',
+      '--single-process',
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor,VizHitTestSurfaceLayer',
+      '--disable-ipc-flooding-protection',
+      '--disable-hang-monitor',
+      '--disable-prompt-on-repost',
+      '--force-color-profile=srgb',
       '--disable-blink-features=AutomationControlled'
     ]
   });
@@ -77,7 +93,7 @@ export async function getBrowser(options = {}) {
   const page = await context.newPage();
 
   // 手动实现基本的反检测功能
-  await page.evaluateOnNewDocument(() => {
+  await context.addInitScript(() => {
     // 移除webdriver属性
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
 
