@@ -1,5 +1,5 @@
 # 使用 Playwright 官方镜像作为基础镜像
-FROM mcr.microsoft.com/playwright:v1.40.0-jammy
+FROM mcr.microsoft.com/playwright:v1.56.1-jammy
 
 # 设置工作目录
 WORKDIR /app
@@ -25,7 +25,6 @@ EXPOSE 3000
 
 # 设置环境变量
 ENV NODE_ENV=production
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
