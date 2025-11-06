@@ -27,6 +27,19 @@ module.exports = {
       width: 1920,
       height: 1080,
     },
+    // 默认上下文配置（模拟真实浏览器）
+    defaultContext: {
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+      locale: 'zh-CN',
+      timezoneId: 'Asia/Shanghai',
+      extraHTTPHeaders: {
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7',
+        'Sec-Ch-Ua': '"Chromium";v="120", "Microsoft Edge";v="120", "Not_A Brand";v="99"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+      },
+    },
     // 浏览器启动参数
     args: [
       '--no-sandbox',
@@ -38,6 +51,14 @@ module.exports = {
       '--disable-gpu',
       '--disable-web-security',
       '--disable-features=VizDisplayCompositor',
+      // 添加更多真实浏览器参数
+      '--disable-blink-features=AutomationControlled',
+      '--disable-extensions',
+      '--disable-plugins',
+      '--disable-default-apps',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
     ],
   },
 

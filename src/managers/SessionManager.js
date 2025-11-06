@@ -38,13 +38,21 @@ class SessionManager {
         ...options.browserOptions,
       };
 
+      // 使用默认上下文配置作为基础
       const contextOptions = {
+        ...config.browser.defaultContext,
         viewport: config.browser.defaultViewport,
-        userAgent: options.userAgent,
-        locale: options.locale,
-        timezoneId: options.timezone,
-        geolocation: options.geolocation,
-        permissions: options.permissions,
+        // 用户提供的选项会覆盖默认设置
+        ...(options.userAgent && { userAgent: options.userAgent }),
+        ...(options.locale && { locale: options.locale }),
+        ...(options.timezone && { timezoneId: options.timezone }),
+        ...(options.geolocation && { geolocation: options.geolocation }),
+        ...(options.permissions && { permissions: options.permissions }),
+        // 合并HTTP头
+        extraHTTPHeaders: {
+          ...config.browser.defaultContext.extraHTTPHeaders,
+          ...(options.extraHTTPHeaders || {}),
+        },
         ...options.contextOptions,
       };
 
@@ -62,6 +70,28 @@ class SessionManager {
       const browser = await chromium.launch(browserOptions);
       const context = await browser.newContext(contextOptions);
       const page = await context.newPage();
+
+      // 注入JavaScript来移除自动化检测痕迹
+      await page.addInitScript(() => {
+        // 移除webdriver属性
+        Object.defineProperty(navigator, 'webdriver', {
+          get: () => undefined,
+        });
+
+        // 随机化一些属性来模拟真实浏览器
+        Object.defineProperty(navigator, 'plugins', {
+          get: () => [
+            { name: 'Chrome PDF Plugin', description: 'Portable Document Format', filename: 'internal-pdf-viewer' },
+            { name: 'Chromium PDF Plugin', description: 'Portable Document Format', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+            { name: 'Microsoft Edge PDF Plugin', description: 'Portable Document Format', filename: 'Microsoft Edge PDF Plugin' },
+          ],
+        });
+
+        // 模拟真实浏览器的languages属性
+        Object.defineProperty(navigator, 'languages', {
+          get: () => ['zh-CN', 'zh', 'en', 'ja'],
+        });
+      });
 
       const sessionData = {
         sessionId,
