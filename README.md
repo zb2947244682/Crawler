@@ -23,7 +23,6 @@ start.bat
 - 🎯 **元素操作**: 点击、等待、滚动等交互
 - 🐳 **Docker部署**: 开箱即用的容器化部署
 - 🔒 **反检测**: 集成stealth插件，绕过基本反爬检测
-- 🖥️ **远程查看**: 支持实时查看和操作浏览器界面（通过VNC）
 
 ## 🏗️ 架构
 
@@ -94,24 +93,15 @@ POST /api/browser/create
   "viewport": {"width": 1920, "height": 1080},
   "headless": true,
   "proxy": {"server": "http://proxy:8080"},
-  "extraHTTPHeaders": {"X-Custom": "value"},
-  "remoteView": false
+  "extraHTTPHeaders": {"X-Custom": "value"}
 }
 ```
-
-**远程查看功能:**
-- 设置 `"remoteView": true` 启用远程查看
-- 会自动启动可视化浏览器
-- 返回 `remoteViewUrl` 用于在浏览器中查看和操作
 
 **响应:**
 ```json
 {
   "success": true,
-  "sessionId": "abc-123-def",
-  "remoteViewUrl": "http://localhost:8080/vnc.html?host=localhost&port=8080&autoconnect=true",
-  "remoteViewEnabled": true,
-  "message": "浏览器会话创建成功，支持远程查看"
+  "sessionId": "abc-123-def"
 }
 ```
 
@@ -239,16 +229,6 @@ curl -X POST http://localhost:3000/api/browser/{sessionId}/screenshot \
 
 # 关闭会话
 curl -X POST http://localhost:3000/api/browser/{sessionId}/close
-
-### 🔍 远程查看浏览器示例
-
-# 创建支持远程查看的浏览器会话
-curl -X POST http://localhost:3000/api/browser/create \
-  -H "Content-Type: application/json" \
-  -d '{"remoteView": true}'
-
-# 在浏览器中打开返回的 remoteViewUrl 即可实时查看和操作浏览器
-# 例如: http://localhost:8080/vnc.html?host=localhost&port=8080&autoconnect=true
 ```
 
 ## ⚙️ 配置

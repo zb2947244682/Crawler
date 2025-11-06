@@ -31,10 +31,9 @@ export async function getBrowser(options = {}) {
   const {
     userAgent,
     viewport = { width: 1920, height: 1080 },
-    headless = process.env.NODE_ENV === 'production' ? false : true, // 生产环境使用可视化浏览器
+    headless = true,
     proxy,
-    extraHTTPHeaders = {},
-    remoteView = false // 是否启用远程查看
+    extraHTTPHeaders = {}
   } = options;
 
   // 清理过期浏览器
@@ -57,36 +56,13 @@ export async function getBrowser(options = {}) {
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
       '--disable-gpu',
-      '--disable-software-rasterizer',
+      '--no-zygote',
+      '--single-process',
+      '--disable-extensions',
       '--disable-background-timer-throttling',
       '--disable-renderer-backgrounding',
-      '--disable-backgrounding-occluded-windows',
-      '--disable-renderer-accessibility',
-      '--disable-extensions',
-      '--disable-plugins',
-      '--disable-default-apps',
-      '--disable-sync',
-      '--disable-translate',
-      '--hide-scrollbars',
-      '--metrics-recording-only',
-      '--mute-audio',
-      '--no-first-run',
-      '--safebrowsing-disable-auto-update',
-      '--single-process',
-      '--disable-web-security',
-      '--disable-features=VizDisplayCompositor,VizHitTestSurfaceLayer',
-      '--disable-ipc-flooding-protection',
-      '--disable-hang-monitor',
-      '--disable-prompt-on-repost',
-      '--force-color-profile=srgb',
-      '--disable-blink-features=AutomationControlled',
-      // 添加VNC显示支持
-      ...(headless ? [] : [
-        '--display=:99',
-        '--no-xshm',
-        '--disable-dev-tools',
-        '--disable-features=VizDisplayCompositor'
-      ])
+      '--disable-features=ImproveInformer,TranslateUI,BlinkGenPropertyTrees',
+      '--disable-blink-features=AutomationControlled'
     ]
   });
 
@@ -101,7 +77,7 @@ export async function getBrowser(options = {}) {
   const page = await context.newPage();
 
   // 手动实现基本的反检测功能
-  await context.addInitScript(() => {
+  await page.evaluateOnNewDocument(() => {
     // 移除webdriver属性
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
 

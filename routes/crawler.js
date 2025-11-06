@@ -31,43 +31,34 @@ router.post('/browser/create', async (req, res) => {
   const {
     userAgent,
     viewport = { width: 1920, height: 1080 },
-    headless = process.env.NODE_ENV === 'production' ? false : true, // 生产环境默认可视化
+    headless = true,
     proxy,
-    extraHTTPHeaders = {},
-    remoteView = false // 启用远程查看
+    extraHTTPHeaders = {}
   } = req.body;
 
   try {
     const sessionId = uuidv4();
-
     const browserInstance = await getBrowser({
       userAgent,
       viewport,
-      headless: remoteView ? false : headless, // 如果启用远程查看，强制使用可视化浏览器
+      headless,
       proxy,
-      extraHTTPHeaders,
-      remoteView
+      extraHTTPHeaders
     });
 
     const session = {
       id: sessionId,
       browserInstance,
       createdAt: Date.now(),
-      lastActivity: Date.now(),
-      remoteView
+      lastActivity: Date.now()
     };
 
     activeSessions.set(sessionId, session);
 
-    // 构建远程查看链接 - 通过URL路径区分会话
-    const remoteViewUrl = remoteView ? `http://localhost:8080/vnc/${sessionId}` : null;
-
     res.json({
       success: true,
       sessionId,
-      remoteViewUrl,
-      message: remoteView ? '浏览器会话创建成功，支持远程查看' : '浏览器会话创建成功',
-      remoteViewEnabled: remoteView
+      message: '浏览器会话创建成功'
     });
 
   } catch (error) {
@@ -484,157 +475,6 @@ router.get('/sessions', (req, res) => {
     sessions,
     total: sessions.length
   });
-});
-
-/**
- * GET /vnc/:sessionId
- * 远程查看浏览器界面
- */
-router.get('/vnc/:sessionId', (req, res) => {
-  const { sessionId } = req.params;
-
-  // 检查会话是否存在
-  const session = activeSessions.get(sessionId);
-  if (!session || !session.remoteView) {
-    return res.status(404).send(`
-      <html>
-        <body>
-          <h2>会话不存在或未启用远程查看</h2>
-          <p>Session ID: ${sessionId}</p>
-          <p><a href="/">返回首页</a></p>
-        </body>
-      </html>
-    `);
-  }
-
-  // 返回noVNC页面
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>远程浏览器查看 - 会话 ${sessionId}</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background: #f0f0f0;
-            }
-            .header {
-                background: #333;
-                color: white;
-                padding: 10px;
-                text-align: center;
-                font-size: 14px;
-            }
-            .session-info {
-                background: #e8f4fd;
-                padding: 8px;
-                border-bottom: 1px solid #ccc;
-                font-size: 12px;
-            }
-            #noVNC_container {
-                width: 100%;
-                height: calc(100vh - 60px);
-            }
-            .status {
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                background: rgba(0,0,0,0.7);
-                color: white;
-                padding: 5px 10px;
-                border-radius: 3px;
-                font-size: 12px;
-                z-index: 1000;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            远程浏览器查看器 - 会话: ${sessionId}
-        </div>
-        <div class="session-info">
-            创建时间: ${new Date(session.createdAt).toLocaleString()} |
-            最后活动: ${new Date(session.lastActivity).toLocaleString()} |
-            远程查看: ${session.remoteView ? '启用' : '禁用'}
-        </div>
-        <div id="noVNC_container">
-            <div id="noVNC_screen">
-                <div id="noVNC_status">正在连接到VNC服务器...</div>
-            </div>
-        </div>
-        <div id="noVNC_status" class="status">正在初始化...</div>
-
-        <script type="module">
-            import RFB from '/app/core/rfb.js';
-            import * as Log from '/app/core/util/logging.js';
-
-            // 设置日志级别
-            Log.init_logging('warn');
-
-            let rfb;
-
-            function connect() {
-                const host = window.location.hostname;
-                const port = 8080; // WebSocket端口
-                const path = 'websockify'; // noVNC WebSocket路径
-
-                const url = 'ws://' + host + ':' + port + '/' + path;
-
-                console.log('连接到:', url);
-
-                rfb = new RFB(document.getElementById('noVNC_screen'), url, {
-                    credentials: {},
-                    shared: true,
-                    repeaterID: '',
-                    wsProtocols: ['binary']
-                });
-
-                rfb.addEventListener('connect', () => {
-                    console.log('VNC连接成功');
-                    document.getElementById('noVNC_status').textContent = '已连接 - 会话: ${sessionId}';
-                    document.getElementById('noVNC_status').style.background = 'rgba(0,150,0,0.8)';
-                });
-
-                rfb.addEventListener('disconnect', () => {
-                    console.log('VNC连接断开');
-                    document.getElementById('noVNC_status').textContent = '连接断开';
-                    document.getElementById('noVNC_status').style.background = 'rgba(150,0,0,0.8)';
-                });
-
-                rfb.addEventListener('credentialsrequired', () => {
-                    console.log('需要VNC凭证');
-                    document.getElementById('noVNC_status').textContent = '需要凭证';
-                    document.getElementById('noVNC_status').style.background = 'rgba(150,150,0,0.8)';
-                });
-
-                rfb.addEventListener('securityfailure', (e) => {
-                    console.error('VNC安全错误:', e.detail);
-                    document.getElementById('noVNC_status').textContent = '安全错误: ' + e.detail.reason;
-                    document.getElementById('noVNC_status').style.background = 'rgba(150,0,0,0.8)';
-                });
-            }
-
-            // 页面加载完成后连接
-            window.addEventListener('load', () => {
-                console.log('页面加载完成，开始连接VNC');
-                connect();
-            });
-
-            // 页面卸载时断开连接
-            window.addEventListener('beforeunload', () => {
-                if (rfb) {
-                    console.log('断开VNC连接');
-                    rfb.disconnect();
-                }
-            });
-        </script>
-    </body>
-    </html>
-  `);
 });
 
 export default router;
