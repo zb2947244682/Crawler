@@ -61,9 +61,9 @@ docker-compose up -d
 docker-compose logs -f crawler-api
 ```
 
-### 方法二：本地开发
+### 方法二：本地开发（Windows）
 
-```bash
+```batch
 # 安装依赖
 npm install
 
@@ -72,6 +72,12 @@ npm run dev
 
 # 运行测试
 npm test
+
+# 或使用一键启动脚本
+start.bat
+
+# 运行测试脚本
+test.bat
 ```
 
 ## 📡 API使用示例

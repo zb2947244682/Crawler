@@ -2,6 +2,17 @@
 
 基于Node.js + Playwright的现代化爬虫API服务，支持浏览器自动化、页面渲染、数据抓取等功能。
 
+## ⚡ Windows快速开始
+
+```batch
+# 1. 确保已安装Node.js (https://nodejs.org/)
+# 2. 双击 start.bat 一键启动服务
+start.bat
+
+# 3. 在浏览器访问: http://localhost:3000
+# 4. 运行测试: 双击 test.bat
+```
+
 ## ✨ 特性
 
 - 🖥️ **浏览器自动化**: 基于Playwright，支持Chrome/Chromium
@@ -42,9 +53,9 @@ docker run -d -p 3000:3000 --name crawler-api crawler-api
 docker-compose up -d
 ```
 
-### 本地开发
+### 本地开发（Windows）
 
-```bash
+```batch
 # 1. 安装依赖
 npm install
 
@@ -53,6 +64,15 @@ npm run dev
 
 # 3. 运行测试
 npm test
+```
+
+**快速启动脚本：**
+```batch
+# 双击运行 start.bat 即可一键启动服务
+start.bat
+
+# 或运行测试
+test.bat
 ```
 
 ## 📖 API文档
