@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  crawler:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MAX_SESSIONS=10
+      # 可选：设置API Key
+      # - API_KEY=your-secret-api-key
+      # 可选：设置允许的域名
+      # - ALLOWED_DOMAINS=example.com,google.com
+    # 分配更多共享内存给Chromium
+    shm_size: 2gb
+    # 重启策略
+    restart: unless-stopped
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/sessions/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
