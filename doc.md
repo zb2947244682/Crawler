@@ -719,9 +719,70 @@ curl -X POST http://localhost:3000/api/sessions/abc123-def456-ghi789/html/multip
   -d '{"selector": "a", "innerHtml": true}'
 ```
 
-### 3.4 获取文本内容
+## 4. 快速访问接口 (GET方法)
 
-获取页面或指定元素的文本内容。
+为了方便快速查看页面状态，我们提供了两个GET接口，无需POST请求，直接在浏览器中访问即可。
+
+### 4.1 快速截图
+
+**接口**: `GET /sessions/:sessionId/snapshot`
+
+**功能**: 直接在浏览器中显示当前页面的截图，无需下载。
+
+**URL参数**:
+- `sessionId`: 会话ID（必需）
+
+**响应**: 直接返回PNG图片的二进制数据，浏览器会自动显示图片。
+
+**使用方法**:
+1. 在浏览器中访问: `http://localhost:3000/api/sessions/{sessionId}/snapshot`
+2. 页面会直接显示当前会话的截图
+3. 支持刷新获取最新截图
+
+**示例**:
+```bash
+# 在浏览器中直接访问查看截图
+http://localhost:3000/api/sessions/abc123-def456-ghi789/snapshot
+```
+
+### 4.2 快速源码下载
+
+**接口**: `GET /sessions/:sessionId/htmlsource`
+
+**功能**: 自动下载当前页面的HTML源码文件。
+
+**URL参数**:
+- `sessionId`: 会话ID（必需）
+
+**响应**: 返回HTML文件的二进制数据，浏览器会自动下载。
+
+**文件名**: 使用页面标题自动生成，格式为 `{页面标题}.html`，特殊字符会被替换为下划线。
+
+**使用方法**:
+1. 在浏览器中访问: `http://localhost:3000/api/sessions/{sessionId}/htmlsource`
+2. 浏览器会自动下载HTML文件
+3. 文件名基于页面标题自动生成
+
+**示例**:
+```bash
+# 在浏览器中访问自动下载HTML源码
+http://localhost:3000/api/sessions/abc123-def456-ghi789/htmlsource
+```
+
+### 4.3 快速访问接口的特点
+
+- **无需POST请求**: 直接GET访问，方便在浏览器中快速查看
+- **零配置**: 无需传递任何参数，使用默认配置
+- **实时响应**: 获取当前页面的实时状态
+- **浏览器友好**: 充分利用浏览器的原生功能（显示图片、下载文件）
+
+**适用场景**:
+- 快速检查页面加载状态
+- 调试爬虫抓取结果
+- 临时查看页面截图
+- 下载页面源码进行分析
+
+## 5. 获取文本内容
 
 **接口**: `POST /sessions/:sessionId/text`
 

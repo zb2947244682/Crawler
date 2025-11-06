@@ -253,4 +253,76 @@ router.post('/:sessionId/text', async (req, res) => {
   }
 });
 
+/**
+ * @route GET /sessions/:sessionId/snapshot
+ * @desc 快速截图 - 直接在浏览器中显示图片
+ */
+router.get('/:sessionId/snapshot', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const sessionManager = req.app.locals.sessionManager;
+    const session = sessionManager.getSession(sessionId);
+
+    console.log(`Taking quick snapshot for session ${sessionId}`);
+
+    const startTime = Date.now();
+
+    // 使用默认配置快速截图：全页PNG
+    const screenshotOptions = {
+      fullPage: true,
+      type: 'png',
+    };
+
+    const buffer = await session.page.screenshot(screenshotOptions);
+
+    const endTime = Date.now();
+    const captureTime = endTime - startTime;
+
+    // 设置响应头，让浏览器直接显示图片
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Length', buffer.length);
+    res.setHeader('X-Capture-Time', captureTime.toString());
+    res.setHeader('Cache-Control', 'no-cache');
+
+    res.send(buffer);
+  } catch (err) {
+    console.error('Quick snapshot error:', err);
+    res.status(500).json(errors.BROWSER_ERROR(err.message));
+  }
+});
+
+/**
+ * @route GET /sessions/:sessionId/htmlsource
+ * @desc 快速源码输出 - 自动下载HTML文件
+ */
+router.get('/:sessionId/htmlsource', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const sessionManager = req.app.locals.sessionManager;
+    const session = sessionManager.getSession(sessionId);
+
+    console.log(`Getting HTML source for session ${sessionId}`);
+
+    // 获取整个页面的HTML内容
+    const html = await session.page.content();
+
+    // 获取页面标题作为文件名
+    const title = await session.page.title();
+    const filename = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
+
+    // 设置响应头，让浏览器自动下载HTML文件
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(html, 'utf8'));
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-cache');
+
+    res.send(html);
+  } catch (err) {
+    console.error('HTML source error:', err);
+    res.status(500).json(errors.BROWSER_ERROR(err.message));
+  }
+});
+
 module.exports = router;
