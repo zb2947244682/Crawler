@@ -1,217 +1,259 @@
-# 2025 年终极 Playwright 爬虫技术文档  
-—— 专为 AI 助手 & 爬虫团队定制的「可直接复制粘贴」生产级宝典  
-（最后更新：2025 年 11 月 5 日）
+非常好的项目！我来给你一个完整的技术指导方案。
 
+## 一、整体架构设计
+
+### 1.1 技术栈选择
+- **Web框架**：推荐 **Express.js**（轻量、成熟）或 **Fastify**（性能更好）
+- **浏览器自动化**：Playwright
+- **会话管理**：内存存储（Map）或 Redis（如果需要持久化/分布式）
+- **容器化**：Docker + 官方 Playwright 镜像
+
+### 1.2 核心组件
+- **SessionManager**：管理所有浏览器会话的生命周期
+- **API Router**：处理 HTTP 请求
+- **Browser Pool**：可选，用于复用浏览器实例（性能优化）
+- **清理机制**：定时清理超时未使用的会话
+
+---
+
+## 二、会话管理策略
+
+### 2.1 会话数据结构
+每个会话需要存储：
+- `sessionId`：唯一标识符（UUID）
+- `browser`：Playwright Browser 实例
+- `context`：BrowserContext 实例
+- `page`：Page 实例
+- `viewport`：视口配置（宽度、高度）
+- `createdAt`：创建时间
+- `lastAccessedAt`：最后访问时间
+- `metadata`：可选的用户自定义数据
+
+### 2.2 会话生命周期管理
+- **创建时机**：调用"新建会话"API 时
+- **销毁时机**：
+  - 主动调用"删除会话"API
+  - 超时自动清理（建议 30-60 分钟无操作）
+  - 服务关闭时批量清理
+- **资源限制**：设置最大并发会话数（建议 10-50，根据服务器配置）
+
+---
+
+## 三、API 设计详解
+
+### 3.1 新建会话 API
+**关键点**：
+- 支持自定义视口尺寸（宽、高）
+- 默认分辨率：1920x1080
+- **特别注意**：你提到的 `1080*8000` 是超长页面，需要：
+  - 设置 `viewport: { width: 1080, height: 8000 }`
+  - 但实际浏览器窗口高度可能有限制，主要用于截图时滚动捕获
+- 支持的可选参数：
+  - `headless`：是否无头模式（默认 true）
+  - `userAgent`：自定义 UA
+  - `locale`：语言/地区
+  - `timezone`：时区
+  - `geolocation`：地理位置
+  - `permissions`：权限设置
+
+**返回数据**：
+- `sessionId`
+- `viewport` 配置
+- `createdAt` 时间戳
+
+---
+
+### 3.2 删除会话 API
+**关键点**：
+- 确保资源正确释放：`page.close()` → `context.close()` → `browser.close()`
+- 需要处理会话不存在的情况（返回 404）
+- 考虑是否允许强制删除（即使正在执行操作）
+
+---
+
+### 3.3 访问 URL API
+**关键点**：
+- 使用 `page.goto(url, options)`
+- 重要的 options：
+  - `waitUntil`：等待策略，推荐 `'networkidle'`（网络空闲）或 `'load'`
+  - `timeout`：超时时间（默认 30s，可配置为 60-90s）
+- 需要验证 URL 格式（防止恶意输入）
+- 返回：
+  - 加载状态（成功/失败）
+  - 最终 URL（可能重定向）
+  - 加载耗时
+
+---
+
+### 3.4 刷新页面 API
+**关键点**：
+- 使用 `page.reload(options)`
+- 同样支持 `waitUntil` 和 `timeout` 参数
+- 可选择是否清除缓存（硬刷新）
+
+---
+
+### 3.5 获取截图 API
+**关键点**：
+- 默认全屏截图（`page.screenshot({ fullPage: true })`）
+- 支持的选项：
+  - `fullPage`：是否截取整个页面（包括滚动区域）
+  - `quality`：JPEG 质量（1-100）
+  - `type`：格式（png/jpeg）
+- **重要优化**：
+  - 默认返回 Base64 编码（直接嵌入响应）
+  - 或返回二进制流（Content-Type: image/png）
+- 对于超长页面（如 8000px 高度）：
+  - `fullPage: true` 可以捕获整个页面
+  - 文件会较大，考虑压缩或限制高度上限
+
+---
+
+### 3.6 获取 HTML 代码 API
+**关键点**：
+- **全页面 HTML**：`page.content()`
+- **CSS 选择器筛选**：
+  - 单个元素：`page.$eval(selector, el => el.outerHTML)`
+  - 多个元素：`page.$$eval(selector, els => els.map(e => e.outerHTML))`
+- 支持的选项：
+  - `selector`：CSS 选择器（可选，不传则返回整页）
+  - `waitForSelector`：是否等待选择器出现（推荐）
+  - `innerHtml`：是否只返回 innerHTML（不含外层标签）
+- **注意事项**：
+  - 返回的是渲染后的 DOM（包含 JS 动态生成的内容）
+  - 处理选择器不存在的情况（返回 null 或错误）
+
+---
+
+### 3.7 操作滚动条 API
+**关键点**：
+- **滚动方式**：
+  1. **滚动到指定位置**：`page.evaluate(() => window.scrollTo(x, y))`
+  2. **滚动到元素**：`element.scrollIntoViewIfNeeded()`
+  3. **滚动相对距离**：`page.mouse.wheel(deltaX, deltaY)`
+  4. **滚动到顶部/底部**：
+     - 顶部：`page.evaluate(() => window.scrollTo(0, 0))`
+     - 底部：`page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))`
+- **支持的参数**：
+  - `x`, `y`：绝对位置
+  - `deltaY`：相对滚动量（正数向下，负数向上）
+  - `selector`：滚动到指定元素
+  - `behavior`：平滑滚动（`'smooth'`）或瞬间滚动（`'auto'`）
+- **等待加载**：滚动后可选等待一段时间（如 500ms），让动态内容加载
+
+---
+
+## 四、Docker 部署方案
+
+### 4.1 Dockerfile 设计
+- **基础镜像**：`mcr.microsoft.com/playwright:v1.40.0-jammy`（或最新稳定版）
+- **关键配置**：
+  - 设置工作目录
+  - 安装 Node.js 依赖
+  - 暴露端口（如 3000）
+  - 使用非 root 用户运行（安全性）
+  - 设置环境变量（`NODE_ENV=production`）
+
+### 4.2 浏览器启动参数
+在 Docker 中必须添加：
 ```
-作者：一位在云端跑了 3000 万页面的老爬虫
-星标：请直接 git clone 走起
-```
-
-## 一、为什么 2025 年只选 Playwright（一图秒懂）
-
-| 维度 | Playwright | Puppeteer | Selenium | DrissionPage |
-|------|------------|-----------|----------|--------------|
-| Docker 官方镜像 | 5 stars (每天更新) | 3 stars | 2 stars | 4 stars (但要自己装 Chrome) |
-| Cloudflare 绕过率 | 99.9%（stealth 一行代码） | 92% | 75% | 95% |
-| 多语言支持 | Python/JS/Java/C# | 仅 JS | 7 种语言 | 仅 Python |
-| 2025 年 GitHub 趋势 | No.1 暴涨 | 下降 | 稳定 | 国内暴涨 |
-| 团队共识 | 全球第一 | 老东家 | 入门 | 国内新贵 |
-
-结论：**2025 年你只需要学会 Playwright，其他都是历史包袱。**
-
-## 二、3 分钟上手（零基础直接复制）
-
-```bash
-# 1. 创建项目
-mkdir playwright-spider && cd playwright-spider
-python -m venv venv && source venv/bin/activate
-
-# 2. 安装核心依赖（2025 最快组合）
-pip install playwright playwright-stealth uv
-
-# 3. 一键安装浏览器（含所有系统依赖）
-playwright install --with-deps chromium
-```
-
-## 三、终极生产 Dockerfile（已为你在 2025 年踩平所有坑）
-
-```dockerfile
-# ================================
-# Playwright 2025 生产级镜像
-# 镜像大小：~1.8GB（已是最精简）
-# ================================
-FROM mcr.microsoft.com/playwright:v1.56.1-noble
-
-# 防止交互式提示
-ENV DEBIAN_FRONTEND=noninteractive \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-WORKDIR /app
-
-# 复制代码（推荐用 .dockerignore 排除 venv、__pycache__）
-COPY . /app
-
-# 超快安装依赖（uv 比 pip 快 10 倍）
-RUN pip install --no-cache-dir uv && \
-    uv pip install --system -r requirements.txt && \
-    # 关键：官方镜像已预装浏览器，但仍需执行一次 install 激活
-    playwright install --with-deps chromium && \
-    # 创建非 root 用户（解决 sandbox 问题）
-    useradd -m -s /bin/bash pwuser && \
-    chown -R pwuser:pwuser /app
-
-USER pwuser
-
-# 容器健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python healthcheck.py || exit 1
-
-CMD ["python", "main.py"]
-```
-
-`.dockerignore`
-```
-__pycache__
-*.pyc
-.git
-venv
-.env
-```
-
-## 四、核心代码模板（2025 年最强反反爬版）
-
-```python
-# main.py
-import random, time, asyncio
-from playwright.sync_api import sync_playwright
-from playwright_stealth import stealth_sync
-
-def random_sleep(a=1, b=3):
-    time.sleep(random.uniform(a, b))
-
-def human_type(page, selector, text):
-    page.fill(selector, "")
-    for char in text:
-        page.type(selector, char, delay=random.uniform(50, 200))
-
-with sync_playwright() as p:
-    # 启动参数（生产必备）
-    browser = p.chromium.launch(
-        headless=True,
-        args=[
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-blink-features=AutomationControlled",
-            "--start-maximized"
-        ]
-    )
-    
-    context = browser.new_context(
-        viewport={'width': 1920, 'height': 1080},
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...",
-        locale="zh-CN",
-        timezone_id="Asia/Shanghai",
-    )
-    
-    # 全局 Cookie（可从文件加载）
-    context.add_cookies([
-        {"name": "sessionid", "value": "your_session", "domain": ".example.com", "path": "/"}
-    ])
-    
-    page = context.new_page()
-    
-    # 关键：一行代码秒过 Cloudflare / PerimeterX / DataDome
-    stealth_sync(page)
-    
-    try:
-        page.goto("https://httpbin.org/headers", wait_until="networkidle", timeout=60000)
-        print("成功绕过检测！")
-        
-        # 获取 JS 渲染后完整 HTML
-        html = page.content()
-        
-        # 真人操作示例
-        page.click("text=登录", timeout=10000)
-        random_sleep()
-        human_type(page, "input[name='username']", "mybot2025")
-        
-        # 保存快照用于调试
-        page.screenshot(path="debug.png", full_page=True)
-        
-    except Exception as e:
-        page.screenshot(path="error.png", full_page=True)
-        raise e
-    finally:
-        browser.close()
-```
-
-## 五、Docker 一键运行命令（生产/调试两用）
-
-```bash
-# 生产模式（无窗口，超稳）
-docker run --rm --init --ipc=host --shm-size=2g my-spider
-
-# 调试模式（带真实浏览器窗口！）
-docker run --rm --init --ipc=host \
-  -e DISPLAY=:99 \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  --cap-add=SYS_ADMIN \
-  my-spider python main.py --headless=False
-```
-
-## 六、2025 年绕过终极武器合集
-
-```bash
-pip install playwright-stealth[all]   # 完整指纹混淆
-pip install fake-useragent            # 随机 UA
-pip install curl-cffi                 # requests 级别的 CF 绕过（备用）
+--no-sandbox
+--disable-setuid-sandbox
+--disable-dev-shm-usage  // 防止共享内存不足
 ```
 
-```python
-# 进阶：真人鼠标轨迹（99.99% 过 DataDome）
-def human_mouse_move(page):
-    page.mouse.move(100, 100)
-    page.mouse.move(500, 300, steps=20)
-    page.mouse.move(800, 600, steps=30)
+### 4.3 资源限制
+- **共享内存**：`docker run --shm-size=2gb`（Chromium 需要）
+- **CPU/内存限制**：根据并发会话数设置（每个浏览器约 200-500MB）
+
+### 4.4 健康检查
+- 添加 `/health` 端点
+- 在 Dockerfile 中配置 `HEALTHCHECK`
+
+---
+
+## 五、关键注意事项
+
+### 5.1 安全性
+- **输入验证**：所有 URL、选择器参数需要严格验证
+- **访问控制**：添加 API Key 或 Token 认证
+- **资源限制**：限制单个会话的操作频率（防止滥用）
+- **URL 白名单**：可选，限制可访问的域名
+
+### 5.2 性能优化
+- **连接池**：复用 Browser 实例，每次创建新的 Context
+- **并发控制**：限制同时打开的页面数
+- **超时管理**：所有操作设置合理超时
+- **内存监控**：定期检查内存使用，必要时重启浏览器
+
+### 5.3 错误处理
+- 每个 API 都需要 try-catch
+- 区分不同错误类型：
+  - 会话不存在（404）
+  - 超时错误（408）
+  - 浏览器崩溃（500）
+  - 参数错误（400）
+- 返回友好的错误信息
+
+### 5.4 日志记录
+- 记录所有会话操作
+- 记录性能指标（页面加载时间、截图耗时等）
+- 使用结构化日志（推荐 Winston 或 Pino）
+
+---
+
+## 六、API 响应格式建议
+
+统一的响应结构：
+```json
+{
+  "success": true/false,
+  "data": { ... },
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "错误描述"
+  },
+  "timestamp": 1234567890
+}
 ```
 
-## 七、完整仓库模板（直接 clone 就能跑）
+---
 
-```bash
-git clone https://github.com/evil-xu/playwright-2025-spider-template.git
-cd playwright-2025-spider-template
-docker build -t spider-2025 .
-docker run --rm --init --ipc=host spider-2025
+## 七、扩展建议
+
+### 未来可添加的功能
+1. **等待元素出现**：`waitForSelector` API
+2. **执行自定义 JS**：`evaluate` API
+3. **点击元素**：模拟点击操作
+4. **表单填充**：输入文本、选择下拉框
+5. **Cookie 管理**：获取/设置 Cookie
+6. **网络监控**：捕获请求/响应
+7. **PDF 导出**：将页面导出为 PDF
+8. **录屏功能**：录制浏览器操作视频
+
+---
+
+## 八、推荐的项目结构
+
+```
+project/
+├── src/
+│   ├── server.js          # Express 服务入口
+│   ├── routes/            # API 路由
+│   │   ├── session.js
+│   │   ├── navigation.js
+│   │   └── capture.js
+│   ├── managers/
+│   │   └── SessionManager.js  # 会话管理器
+│   ├── middlewares/       # 中间件（认证、错误处理）
+│   ├── utils/             # 工具函数
+│   └── config.js          # 配置文件
+├── Dockerfile
+├── docker-compose.yml
+├── package.json
+└── README.md
 ```
 
-仓库地址（已为你准备好）：  
-https://github.com/evil-xu/playwright-2025-spider-template
+---
 
-包含功能：
-- stealth 完整绕过
-- 自动重试机制
-- Prometheus 监控
-- 分布式锁（Redis）
-- 结果存 MySQL/ClickHouse
-- 企业级日志（structlog）
-
-## 八、给 AI 助手的专用指令（直接复制给你的助手）
-
-```markdown
-【终极指令】
-你现在是 2025 年的 Playwright 爬虫专家。
-所有爬虫任务必须使用以下技术栈：
-1. 基镜：mcr.microsoft.com/playwright:v1.56.1-noble
-2. 绕过：playwright-stealth 一行代码
-3. 容器参数：--ipc=host --shm-size=2g
-4. 代码模板：必须包含 stealth_sync(page)
-5. 生产要求：非 root 用户 + healthcheck
-
-拒绝任何 Selenium、requests-html、scrapy-playwright 的旧方案。
-拒绝任何「自己编译 Chrome」的自杀式方案。
-```
-
-把这份文档直接发给你的 AI 助手，它就会变成 2025 年最硬核的爬虫工程师。
-
-需要我现在就把这个仓库 fork 到你的 GitHub 并设为私有模板吗？一句话就行。
+这个技术方案应该足够让 AI 助手生成高质量的代码了。如果有任何细节需要澄清，请随时问我！
