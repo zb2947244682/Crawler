@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/sse",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-01f5cecb-a265-4ec5-9cbf-fedca4740f02"
+      },
+      "disabled": true
+    },
+    "mcp-context-memory": {
+      "command": "node",
+      "args": [
+        "D:\\Codes\\MCPRepo\\mcp-tools\\mcp-context-memory\\index.js"
+      ],
+      "disabled": true
+    },
+    "mcp-http-requester": {
+      "command": "node",
+      "args": [
+        "D:\\Codes\\MCPRepo\\mcp-tools\\mcp-http-requester\\index.js"
+      ],
+      "disabled": true
+    },
+    "mcp-mssql": {
+      "command": "node",
+      "args": [
+        "D:\\Codes\\MCPRepo\\mcp-tools\\mcp-mssql\\index.js"
+      ],
+      "disabled": true
+    },
+    "mcp-ssh": {
+      "command": "node",
+      "args": [
+        "D:\\Codes\\MCPRepo\\mcp-tools\\mcp-ssh\\index.js"
+      ],
+      "disabled": true
+    }
+  }
+}

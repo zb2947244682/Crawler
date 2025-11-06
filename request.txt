@@ -1,0 +1,23 @@
+fetch("https://edith.xiaohongshu.com/api/sns/web/v1/search/notes", {
+  "headers": {
+    "accept": "application/json, text/plain, */*",
+    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7",
+    "content-type": "application/json;charset=UTF-8",
+    "priority": "u=1, i",
+    "sec-ch-ua": "\"Chromium\";v=\"142\", \"Microsoft Edge\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-site",
+    "x-b3-traceid": "eb27af087c2207ad",
+    "x-s": "XYS_2UQhPsHCH0c1Pjh9HjIj2erjwjQhyoPTqBPT49pjHjIj2eHjwjQgynEDJ74AHjIj2ePjwjQTJdPIPAZlg98yGLTlLM8dtA8ncLTaLsT1LjR9p9Qf4/+8PDMawepnz/4x2bSkJLDUy0mD+7iF8bb9cSGl/Fq3pAmjLgSIpnztyS4oJnc3JArIc9lQzo8GaA+6JnRhzgW7LFEV/r+FcFRHpB4L4aT8PfzEzrlj4/zP4FzmPrkHaMY/Pb4n4aTePbz+c9EIqMQCLDkcpnbLP9l9JFT/Jfznnfl0yLLIaSQQyAmOarGROaHVHdWFH0ijJ9Qx8n+FHdF=",
+    "x-s-common": "2UQAPsHC+aIjqArjwjHjNsQhPsHCH0rjNsQhPaHCH0c1Pjh9HjIj2eHjwjQgynEDJ74AHjIj2ePjwjQhyoPTqBPT49pjHjIj2ecjwjHFN0WFN0cjNsQh+aHCH0rE+9Gh+0bD+erAP0p3JBkUqe8F2gbfP7HlPd4EG0+1P9QkP/qU89WI+/ZIPeZUP0L9+/cjNsQh+jHCHjHVHdW7H0ijHjIj2eWjwjQQPAYUaBzdq9k6qB4Q4fpA8b878FSet9RQzLlTcSiM8/+n4MYP8F8LagY/P9Ql4FpUzfpS2BcI8nT1GFbC/L88JdbFyrSiafp/cDMra7pFLDDAa7+8J7QgabmFz7Qjp0mcwp4fanD68p40+fp8qgzELLbILrDA+9p3JpH9LLlz+LSk+d+DJfpSL98lnLYl49IUqgcMc0mrcDShtMmozBD6q7pFyFSh8o+h4g4U+obFyLSi4nbQz/+SPFlnPrDApSzQcA4SPopFJeQmzBMA/o8Szb+NqM+c4ApQzg8Ayp8FaDRl4AYs4g4fLomD8pzBpFRQ2ezLanSM+Skc47Qc4gcMag8VGLlj87PAqgzhagYSqAbn4FYQy7pTanTQ2npx87+8NM4L89L78p+l4BL6ze4AzB+IygmS8Bp8qDzFaLP98Lzn4AQQzLEAL7bFJBEVL7pwyS8Fag868nTl4e+0n04ApfuF8FSbL7SQyrpotASrpLS92dDFa/YOanS0+Mkc4FbQ4fSe+Bu6qFzP8oP9Lo4naLP78p+D+7+DPbHFaLp98pzyqLMFpd4panSDqA+AN7+hnDESyp8FGf+p8np8pd4iag8+N9rIP9pD4g4p/BEwq98l49pQ2BlFagYyL9RM4FRdpd4Iq7HFyBppN9L9/o8Szbm7zDS987PlqfRAPLzyyLSk+7+xGfRAP94UzDSbPBLALoz9anSjLDRl4FROqgziagYSq7Yc4A4QyrbSpSmFyrSiN7+8qgz/z7b72nMc4FzQ4DS3a/+Q4ezYzMPFnaRSygpFyDSkJgQQzLRALM8F2DQ6//YIqFbAp7P38rSkqLQlLozHJp874DS9+fpnLoz8LoQO8p8C+7PlqSQsanYOqAP7adPALozY/7p7GLDA8g+gqgzeaLpw8/8SLdzQ4jRA80q68/mc4b+QcFTA+Sm7P/z6JgbQzLldaLP9qA8B+nphw/mSPrMdqFzl4BMQypm9a/+a+fRc4BRQ2rp+aLptqA8+4/+FPe+AyS8FqLSbwB+yqgzGaSSmq9z/8Bp/4g4tJMmF2LSe+r8Qy9+AGMm74rTn4BQQ2B4SLFFIqM8c4omUpdz9anSIqf+M4rSQcFSUcS4TGDS3N9pfyDbA8BzO8/8n4UTFqgzyagYQGLSh+d+LLozeag868nkjwrSQcFp/cSSL4FS9LD4QcA4Sp7b7Pn4n4bmFLoz3a/+iPrSiPo+Lq94SLMm7yomjqSQQzLzFwbmFq7Qc4BYQ2obMagYLGFS3zLpQyn4S+SqROaHVHdWEH0iTP/r7+0cUPeH9PUIj2erIH0iINsQhP/rjwjQ1J7QTGnIjKc==",
+    "x-t": "1762393097827",
+    "x-xray-traceid": "cd2b6843210f727bd07f139527f20c2d",
+    "cookie": "abRequestId=18fe8d7d-a8fe-5f31-be38-e3b7f3831423; xsecappid=xhs-pc-web; a1=197f861d41325kljrp6tyqf3r12wyb3n3bi172gh050000225654; webId=bd8a6cbd37d4a123fb692dc4b4b4face; gid=yjWiYKyff2qfyjWiYKyf4DJkyqJ2T1VFUK9v3x8AiqFyJy28EvDqIW888JJ2K248qd2D8y4q; web_session=0400698c51bd141ab03655c0cc3a4b50fe8840; webBuild=4.84.4; acw_tc=0a0b106617623927521382408e6f3c359a1bed1bb01e1facf1787a7d6da5fe; unread={%22ub%22:%22690605870000000004010f89%22%2C%22ue%22:%22690af444000000000303917a%22%2C%22uc%22:28}; loadts=1762393048545; websectiga=984412fef754c018e472127b8effd174be8a5d51061c991aadd200c69a2801d6; sec_poison_id=eefaf4a8-51c0-4340-bae0-281863571b3c",
+    "Referer": "https://www.xiaohongshu.com/"
+  },
+  "body": "{\"keyword\":\"日常\",\"page\":1,\"page_size\":20,\"search_id\":\"2fjxq0cmv4kacrzrflhk7\",\"sort\":\"general\",\"note_type\":0,\"ext_flags\":[],\"filters\":[{\"tags\":[\"general\"],\"type\":\"sort_type\"},{\"tags\":[\"不限\"],\"type\":\"filter_note_type\"},{\"tags\":[\"不限\"],\"type\":\"filter_note_time\"},{\"tags\":[\"不限\"],\"type\":\"filter_note_range\"},{\"tags\":[\"不限\"],\"type\":\"filter_pos_distance\"}],\"geo\":\"\",\"image_formats\":[\"jpg\",\"webp\",\"avif\"]}",
+  "method": "POST"
+});

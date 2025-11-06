@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+请只用简体中文回复
+我当前使用的系统是Windows 11 专业版
+windows的powershell是不支持2个&符号同时使用的
+
+我的部署环境是ubuntu24
+在合适的时候，使用各种预先配置的MCP服务
