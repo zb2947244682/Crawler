@@ -217,7 +217,46 @@ curl -X DELETE "http://localhost:3000/api/sessions/abc123-def456-ghi789?force=tr
 curl -X POST http://localhost:3000/api/sessions/list
 ```
 
-### 1.4 获取会话统计
+### 1.4 清空所有会话
+
+删除所有当前活跃的会话，释放系统资源。
+
+**接口**: `GET /sessions/clear`
+
+**响应示例**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "deletedCount": 3,
+    "totalSessions": 3
+  },
+  "message": "All sessions cleared successfully",
+  "timestamp": 1736171280
+}
+```
+
+**响应字段说明**:
+- `deletedCount`: 成功删除的会话数量
+- `totalSessions`: 删除前活跃的会话总数
+
+**使用示例**:
+
+```bash
+curl http://localhost:3000/api/sessions/clear
+```
+
+**使用场景**:
+- 系统维护时清理所有会话
+- 重置系统状态
+- 释放浏览器资源
+
+**注意事项**:
+- 此操作不可逆，所有会话数据将被永久删除
+- 建议在系统维护前使用
+
+### 1.5 获取会话统计
 
 获取当前会话系统的统计信息。
 

@@ -99,6 +99,36 @@ router.post('/list', (req, res) => {
 });
 
 /**
+ * @route GET /sessions/clear
+ * @desc 清空所有会话
+ */
+router.get('/clear', (req, res) => {
+  try {
+    const sessionManager = req.app.locals.sessionManager;
+    const sessions = sessionManager.getAllSessions();
+
+    // 逐个删除所有会话
+    let deletedCount = 0;
+    for (const session of sessions) {
+      try {
+        sessionManager.deleteSession(session.sessionId);
+        deletedCount++;
+      } catch (err) {
+        console.warn(`Failed to delete session ${session.sessionId}:`, err.message);
+      }
+    }
+
+    res.json(success({
+      deletedCount,
+      totalSessions: sessions.length
+    }, 'All sessions cleared successfully'));
+  } catch (err) {
+    console.error('Clear sessions error:', err);
+    res.status(500).json(errors.BROWSER_ERROR(err.message));
+  }
+});
+
+/**
  * @route POST /sessions/stats
  * @desc 获取会话统计信息
  */
