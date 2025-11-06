@@ -24,6 +24,7 @@
 - 🎯 **元素交互**: 点击、等待元素、滚动到元素等
 - 📊 **会话监控**: 实时监控活跃会话和浏览器池状态
 - 🏥 **健康检查**: 内置健康检查和状态监控
+- 🖥️ **远程查看**: 支持实时查看和操作浏览器界面（VNC Web界面）
 
 ## 📁 项目结构
 
@@ -126,6 +127,24 @@ curl -X POST http://localhost:3000/api/browser/{sessionId}/screenshot \
 - 🎯 **元素截图**: `{"selector": "#content"}` 只截取指定元素
 - 🎨 **多种格式**: 支持PNG、JPEG格式
 - 📊 **Base64返回**: 直接返回Base64编码的图片数据，可直接在浏览器中显示
+
+### 6. 远程查看浏览器（重要！可以手动操作浏览器）
+```bash
+# 创建支持远程查看的浏览器会话
+curl -X POST http://localhost:3000/api/browser/create \
+  -H "Content-Type: application/json" \
+  -d '{"remoteView": true}'
+
+# 返回的响应包含 remoteViewUrl
+# 在浏览器中打开该URL即可实时查看和操作浏览器
+# 例如: http://localhost:8080/vnc.html?host=localhost&port=8080&autoconnect=true
+```
+
+**远程查看特性：**
+- 🖥️ **实时查看**: 通过Web界面实时查看浏览器内容
+- 🎮 **完全操作**: 支持鼠标、键盘所有操作
+- 🔐 **人工登录**: 完美解决需要人工干预的登录场景
+- 🔄 **无缝切换**: 手动操作后API继续自动化
 
 ## 🔍 针对您的小红书爬取需求
 

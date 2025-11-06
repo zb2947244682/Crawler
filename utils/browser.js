@@ -31,9 +31,10 @@ export async function getBrowser(options = {}) {
   const {
     userAgent,
     viewport = { width: 1920, height: 1080 },
-    headless = true,
+    headless = process.env.NODE_ENV === 'production' ? false : true, // 生产环境使用可视化浏览器
     proxy,
-    extraHTTPHeaders = {}
+    extraHTTPHeaders = {},
+    remoteView = false // 是否启用远程查看
   } = options;
 
   // 清理过期浏览器
@@ -78,7 +79,14 @@ export async function getBrowser(options = {}) {
       '--disable-hang-monitor',
       '--disable-prompt-on-repost',
       '--force-color-profile=srgb',
-      '--disable-blink-features=AutomationControlled'
+      '--disable-blink-features=AutomationControlled',
+      // 添加VNC显示支持
+      ...(headless ? [] : [
+        '--display=:99',
+        '--no-xshm',
+        '--disable-dev-tools',
+        '--disable-features=VizDisplayCompositor'
+      ])
     ]
   });
 

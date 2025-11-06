@@ -31,9 +31,10 @@ router.post('/browser/create', async (req, res) => {
   const {
     userAgent,
     viewport = { width: 1920, height: 1080 },
-    headless = true,
+    headless = process.env.NODE_ENV === 'production' ? false : true, // 生产环境默认可视化
     proxy,
-    extraHTTPHeaders = {}
+    extraHTTPHeaders = {},
+    remoteView = false // 启用远程查看
   } = req.body;
 
   try {
@@ -41,9 +42,10 @@ router.post('/browser/create', async (req, res) => {
     const browserInstance = await getBrowser({
       userAgent,
       viewport,
-      headless,
+      headless: remoteView ? false : headless, // 如果启用远程查看，强制使用可视化浏览器
       proxy,
-      extraHTTPHeaders
+      extraHTTPHeaders,
+      remoteView
     });
 
     const session = {
@@ -55,10 +57,15 @@ router.post('/browser/create', async (req, res) => {
 
     activeSessions.set(sessionId, session);
 
+    // 构建远程查看链接
+    const remoteViewUrl = remoteView ? `http://localhost:8080/vnc.html?host=localhost&port=8080&autoconnect=true` : null;
+
     res.json({
       success: true,
       sessionId,
-      message: '浏览器会话创建成功'
+      remoteViewUrl,
+      message: remoteView ? '浏览器会话创建成功，支持远程查看' : '浏览器会话创建成功',
+      remoteViewEnabled: remoteView
     });
 
   } catch (error) {

@@ -4,7 +4,7 @@ FROM node:20-alpine
 # 设置工作目录
 WORKDIR /app
 
-# 安装Playwright系统依赖
+# 安装Playwright系统依赖和VNC服务器
 RUN apk add --no-cache \
     chromium \
     nss \
@@ -12,6 +12,12 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
+    xvfb \
+    x11vnc \
+    novnc \
+    websockify \
+    supervisor \
+    fluxbox \
     && rm -rf /var/cache/apk/*
 
 # 设置Playwright环境变量
@@ -32,5 +38,11 @@ COPY . .
 # 暴露端口
 EXPOSE 3000
 
-# 启动应用
-CMD ["npm", "start"]
+# 复制supervisor配置文件
+COPY supervisord.conf /etc/supervisord.conf
+
+# 暴露端口 (API + VNC Web界面)
+EXPOSE 3000 8080
+
+# 启动supervisor管理所有服务
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
