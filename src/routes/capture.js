@@ -308,14 +308,18 @@ router.get('/:sessionId/htmlsource', async (req, res) => {
     // 获取整个页面的HTML内容
     const html = await session.page.content();
 
-    // 获取页面标题作为文件名
+    // 获取页面标题作为文件名，并清理特殊字符
     const title = await session.page.title();
-    const filename = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
+    const cleanTitle = title.replace(/[^\w\u4e00-\u9fa5]/g, '_').substring(0, 30); // 只保留字母数字汉字，下划线替换其他字符，限制长度更短
+    const timestamp = Math.floor(Date.now() / 1000); // 时间戳
+    const filename = `${cleanTitle}_${timestamp}.html`;
 
     // 设置响应头，让浏览器自动下载HTML文件
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Content-Length', Buffer.byteLength(html, 'utf8'));
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    // 对文件名进行URL编码以避免特殊字符问题
+    const encodedFilename = encodeURIComponent(filename);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFilename}`);
     res.setHeader('Cache-Control', 'no-cache');
 
     res.send(html);

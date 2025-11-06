@@ -756,7 +756,7 @@ http://localhost:3000/api/sessions/abc123-def456-ghi789/snapshot
 
 **响应**: 返回HTML文件的二进制数据，浏览器会自动下载。
 
-**文件名**: 使用页面标题自动生成，格式为 `{页面标题}.html`，特殊字符会被替换为下划线。
+**文件名**: 使用页面标题自动生成，格式为 `{页面标题}_{时间戳}.html`，特殊字符会被替换为下划线，标题长度限制为50个字符。
 
 **使用方法**:
 1. 在浏览器中访问: `http://localhost:3000/api/sessions/{sessionId}/htmlsource`
