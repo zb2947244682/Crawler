@@ -4,7 +4,7 @@ FROM node:20-alpine
 # 设置工作目录
 WORKDIR /app
 
-# 安装Playwright系统依赖和VNC服务器
+# 安装Playwright系统依赖和VNC服务器，以及中文字体
 RUN apk add --no-cache \
     chromium \
     nss \
@@ -18,6 +18,8 @@ RUN apk add --no-cache \
     websockify \
     supervisor \
     fluxbox \
+    font-noto-cjk \
+    font-noto-emoji \
     && rm -rf /var/cache/apk/*
 
 # 设置Playwright环境变量

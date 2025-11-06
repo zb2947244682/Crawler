@@ -19,6 +19,156 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // 路由
 app.use('/api', crawlerRouter);
 
+// VNC远程查看路由
+app.get('/vnc/:sessionId', (req, res) => {
+  const { sessionId } = req.params;
+
+  // 检查会话是否存在（这里需要导入activeSessions，但会有循环依赖问题）
+  // 暂时返回一个简单的测试页面
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>远程浏览器查看 - 会话 ${sessionId}</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background: #f0f0f0;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+            }
+            .header {
+                background: #333;
+                color: white;
+                padding: 15px;
+                text-align: center;
+                font-size: 16px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .status {
+                background: #e8f4fd;
+                border: 1px solid #b8daff;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px;
+                text-align: center;
+                max-width: 600px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .session-info {
+                background: #f8f9fa;
+                border-radius: 6px;
+                padding: 15px;
+                margin: 10px 0;
+                border-left: 4px solid #007bff;
+            }
+            .loading {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #3498db;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-right: 10px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            🖥️ 远程浏览器查看器
+        </div>
+
+        <div class="container">
+            <div class="status">
+                <div class="loading"></div>
+                <strong>正在连接到浏览器会话...</strong>
+                <div class="session-info">
+                    <strong>会话ID:</strong> ${sessionId}<br>
+                    <strong>状态:</strong> 连接中...<br>
+                    <strong>时间:</strong> ${new Date().toLocaleString()}
+                </div>
+                <p>如果连接失败，请确保：</p>
+                <ul style="text-align: left; display: inline-block;">
+                    <li>浏览器会话已启用远程查看</li>
+                    <li>VNC服务正在运行</li>
+                    <li>网络连接正常</li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            // 简单的重连逻辑
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 10;
+
+            function updateStatus(message, isError = false) {
+                const statusDiv = document.querySelector('.status');
+                const sessionInfo = document.querySelector('.session-info');
+
+                if (isError) {
+                    statusDiv.style.borderColor = '#dc3545';
+                    statusDiv.style.backgroundColor = '#f8d7da';
+                }
+
+                // 移除loading动画
+                const loading = document.querySelector('.loading');
+                if (loading) {
+                    loading.remove();
+                }
+
+                statusDiv.innerHTML = '<strong>' + message + '</strong>' +
+                    '<div class="session-info">' + sessionInfo.innerHTML + '</div>' +
+                    '<p>如果连接失败，请确保：</p>' +
+                    '<ul style="text-align: left; display: inline-block;">' +
+                    '<li>浏览器会话已启用远程查看</li>' +
+                    '<li>VNC服务正在运行</li>' +
+                    '<li>网络连接正常</li>' +
+                    '</ul>';
+            }
+
+            // 检查VNC连接状态
+            function checkVNCConnection() {
+                // 这里可以添加实际的VNC连接检查逻辑
+                setTimeout(() => {
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        updateStatus('正在尝试连接 (' + reconnectAttempts + '/' + maxReconnectAttempts + ')...', false);
+                        checkVNCConnection();
+                    } else {
+                        updateStatus('连接失败，请检查服务状态', true);
+                    }
+                }, 2000);
+            }
+
+            // 页面加载完成后开始检查连接
+            window.addEventListener('load', () => {
+                updateStatus('正在初始化连接...');
+                setTimeout(checkVNCConnection, 1000);
+            });
+        </script>
+    </body>
+    </html>
+  `);
+});
+
 // 健康检查
 app.get('/health', (req, res) => {
   res.json({
