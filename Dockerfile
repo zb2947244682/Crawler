@@ -28,9 +28,7 @@ ENV NODE_ENV=production
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/sessions/health', (res) => { \
-    process.exit(res.statusCode === 200 ? 0 : 1) \
-  }).on('error', () => process.exit(1))"
+  CMD node -e "const http = require('http'); const req = http.request({hostname: 'localhost', port: 3000, path: '/api/sessions/health', method: 'POST'}, (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }); req.on('error', () => process.exit(1)); req.end()"
 
 # 启动应用
 CMD ["node", "src/server.js"]

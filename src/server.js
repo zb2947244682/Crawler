@@ -37,7 +37,7 @@ app.use('/api/sessions', navigationRoutes);
 app.use('/api/sessions', captureRoutes);
 
 // 根路径重定向到健康检查
-app.get('/', (req, res) => {
+app.post('/', (req, res) => {
   res.redirect('/api/sessions/health');
 });
 

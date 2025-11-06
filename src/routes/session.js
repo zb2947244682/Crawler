@@ -83,10 +83,10 @@ router.delete('/:sessionId', async (req, res) => {
 });
 
 /**
- * @route GET /sessions
+ * @route POST /sessions/list
  * @desc 获取所有会话列表
  */
-router.get('/', (req, res) => {
+router.post('/list', (req, res) => {
   try {
     const sessionManager = req.app.locals.sessionManager;
     const sessions = sessionManager.getAllSessions();
@@ -99,10 +99,10 @@ router.get('/', (req, res) => {
 });
 
 /**
- * @route GET /sessions/stats
+ * @route POST /sessions/stats
  * @desc 获取会话统计信息
  */
-router.get('/stats', (req, res) => {
+router.post('/stats', (req, res) => {
   try {
     const sessionManager = req.app.locals.sessionManager;
     const stats = sessionManager.getStats();
@@ -115,10 +115,10 @@ router.get('/stats', (req, res) => {
 });
 
 /**
- * @route GET /health
+ * @route POST /sessions/health
  * @desc 健康检查
  */
-router.get('/health', (req, res) => {
+router.post('/health', (req, res) => {
   const sessionManager = req.app.locals.sessionManager;
   const stats = sessionManager.getStats();
 

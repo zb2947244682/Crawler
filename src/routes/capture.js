@@ -6,16 +6,16 @@ const config = require('../config');
 const router = express.Router();
 
 /**
- * @route GET /sessions/:sessionId/screenshot
+ * @route POST /sessions/:sessionId/screenshot
  * @desc 获取页面截图
- * @query {
+ * @body {
  *   fullPage?: boolean,    // 是否截取整个页面
  *   quality?: number,      // JPEG质量 (1-100)
  *   type?: 'png' | 'jpeg', // 图片格式
  *   format?: 'base64' | 'binary'  // 返回格式
  * }
  */
-router.get('/:sessionId/screenshot', async (req, res) => {
+router.post('/:sessionId/screenshot', async (req, res) => {
   try {
     const { sessionId } = req.params;
     const {
@@ -23,7 +23,7 @@ router.get('/:sessionId/screenshot', async (req, res) => {
       quality = config.page.screenshotQuality,
       type = 'png',
       format = 'base64'
-    } = req.query;
+    } = req.body;
 
     const params = { fullPage: fullPage === 'true', quality: parseInt(quality), type };
     if (!isValidScreenshotParams(params)) {
@@ -75,22 +75,22 @@ router.get('/:sessionId/screenshot', async (req, res) => {
 });
 
 /**
- * @route GET /sessions/:sessionId/html
+ * @route POST /sessions/:sessionId/html
  * @desc 获取页面HTML代码
- * @query {
+ * @body {
  *   selector?: string,     // CSS选择器（可选，不传则返回整页）
  *   waitForSelector?: boolean,  // 是否等待选择器出现
  *   innerHtml?: boolean    // 是否只返回innerHTML
  * }
  */
-router.get('/:sessionId/html', async (req, res) => {
+router.post('/:sessionId/html', async (req, res) => {
   try {
     const { sessionId } = req.params;
     const {
       selector,
-      waitForSelector = 'false',
-      innerHtml = 'false'
-    } = req.query;
+      waitForSelector = false,
+      innerHtml = false
+    } = req.body;
 
     if (selector && !isValidSelector(selector)) {
       return res.status(400).json(errors.INVALID_PARAMS('Invalid CSS selector'));
@@ -139,22 +139,22 @@ router.get('/:sessionId/html', async (req, res) => {
 });
 
 /**
- * @route GET /sessions/:sessionId/html/multiple
+ * @route POST /sessions/:sessionId/html/multiple
  * @desc 获取多个元素的HTML代码
- * @query {
+ * @body {
  *   selector: string,      // CSS选择器（必需）
  *   waitForSelector?: boolean,  // 是否等待选择器出现
  *   innerHtml?: boolean    // 是否只返回innerHTML
  * }
  */
-router.get('/:sessionId/html/multiple', async (req, res) => {
+router.post('/:sessionId/html/multiple', async (req, res) => {
   try {
     const { sessionId } = req.params;
     const {
       selector,
-      waitForSelector = 'false',
-      innerHtml = 'false'
-    } = req.query;
+      waitForSelector = false,
+      innerHtml = false
+    } = req.body;
 
     if (!selector) {
       return res.status(400).json(errors.INVALID_PARAMS('Selector is required for multiple elements'));
@@ -198,17 +198,17 @@ router.get('/:sessionId/html/multiple', async (req, res) => {
 });
 
 /**
- * @route GET /sessions/:sessionId/text
+ * @route POST /sessions/:sessionId/text
  * @desc 获取页面文本内容
- * @query {
+ * @body {
  *   selector?: string,     // CSS选择器（可选）
  *   waitForSelector?: boolean  // 是否等待选择器出现
  * }
  */
-router.get('/:sessionId/text', async (req, res) => {
+router.post('/:sessionId/text', async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const { selector, waitForSelector = 'false' } = req.query;
+    const { selector, waitForSelector = false } = req.body;
 
     if (selector && !isValidSelector(selector)) {
       return res.status(400).json(errors.INVALID_PARAMS('Invalid CSS selector'));

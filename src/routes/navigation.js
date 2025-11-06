@@ -211,10 +211,10 @@ router.post('/:sessionId/scroll/bottom', async (req, res) => {
 });
 
 /**
- * @route GET /sessions/:sessionId/url
+ * @route POST /sessions/:sessionId/url
  * @desc 获取当前页面URL
  */
-router.get('/:sessionId/url', async (req, res) => {
+router.post('/:sessionId/url', async (req, res) => {
   try {
     const { sessionId } = req.params;
 
